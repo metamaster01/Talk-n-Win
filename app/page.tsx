@@ -3,6 +3,7 @@
 import CommunicatorSection from "@/components/communicator-section";
 import ConfidenceSection from "@/components/confidence-section";
 import CTASection from "@/components/cta-section";
+import DemoClassShowcase from "@/components/DemoClass";
 import FeaturedCourses from "@/components/FeaturedCourse";
 import Footer from "@/components/footer";
 import HeroSection from "@/components/hero-section";
@@ -24,6 +25,7 @@ const courses = await fetchPublicCourses(9);
       <HeroSection />
       <StatsSection />
       <FeaturedCourses courses={courses}/>
+      <DemoClassShowcase />
       <ConfidenceSection />
       <LearningCards />
       <CommunicatorSection />
