@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function CTASection (){
   return (
     <section className="bg-gradient-to-r from-purple-600 via-purple-500 to-purple-600 py-16 md:py-20 relative overflow-hidden">
@@ -22,8 +24,10 @@ export default function CTASection (){
             </p>
           </div>
           
-          <button className="bg-white text-purple-600 px-8 py-4 rounded-full font-semibold text-lg hover:bg-gray-50 transform hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl whitespace-nowrap">
+          <button  className="bg-white text-purple-600 px-8 py-4 rounded-full font-semibold text-lg hover:bg-gray-50 transform hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl whitespace-nowrap">
+            <Link href="/courses" className="text-purple-600 text-lg font-medium">
             Explore Courses
+            </Link>
           </button>
         </div>
       </div>

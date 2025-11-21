@@ -84,7 +84,7 @@ export default function DemoClassShowcase() {
   const priceDisplay = isFree ? "FREE" : `₹${demoClass.price}`;
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-fuchsia-50 via-white to-purple-50 py-16 px-4">
+    <section id="demo-class" className="relative overflow-hidden bg-gradient-to-br from-fuchsia-50 via-white to-purple-50 py-16 px-4">
       {/* Decorative elements */}
       <div className="absolute top-0 left-0 w-72 h-72 bg-fuchsia-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
       <div className="absolute top-0 right-0 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>

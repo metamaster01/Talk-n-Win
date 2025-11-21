@@ -44,10 +44,10 @@ export default function Footer () {
           <div>
             <h3 className="font-semibold text-gray-900 mb-4">Company</h3>
             <ul className="space-y-3">
-              <li><a href="#" className="text-gray-600 hover:text-purple-600 transition-colors">Home</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-purple-600 transition-colors">About us</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-purple-600 transition-colors">Courses</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-purple-600 transition-colors">Contact</a></li>
+              <li><a href="/" className="text-gray-600 hover:text-purple-600 transition-colors">Home</a></li>
+              <li><a href="#about" className="text-gray-600 hover:text-purple-600 transition-colors">About us</a></li>
+              <li><a href="/courses" className="text-gray-600 hover:text-purple-600 transition-colors">Courses</a></li>
+              <li><a href="/contact" className="text-gray-600 hover:text-purple-600 transition-colors">Contact</a></li>
             </ul>
           </div>
 
@@ -55,9 +55,9 @@ export default function Footer () {
           <div>
             <h3 className="font-semibold text-gray-900 mb-4">Popular courses</h3>
             <ul className="space-y-3">
-              <li><a href="#" className="text-gray-600 hover:text-purple-600 transition-colors">3C's of Communication</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-purple-600 transition-colors">Speak to Lead</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-purple-600 transition-colors">Talk & Win</a></li>
+              <li><a href="/courses/3c-of-communication" className="text-gray-600 hover:text-purple-600 transition-colors">3C's of Communication</a></li>
+              <li><a href="/courses/speak-to-lead" className="text-gray-600 hover:text-purple-600 transition-colors">Speak to Lead</a></li>
+              <li><a href="/courses/communication-mastery-program" className="text-gray-600 hover:text-purple-600 transition-colors">Communication mastery</a></li>
             </ul>
           </div>
 
@@ -84,8 +84,8 @@ export default function Footer () {
           <div>
             <h3 className="font-semibold text-gray-900 mb-4">Legal</h3>
             <ul className="space-y-3">
-              <li><a href="#" className="text-gray-600 hover:text-purple-600 transition-colors">Terms of use</a></li>
-              <li><a href="#" className="text-gray-600 hover:text-purple-600 transition-colors">Privacy policy</a></li>
+              <li><a href="/terms-of-use" className="text-gray-600 hover:text-purple-600 transition-colors">Terms of use</a></li>
+              <li><a href="/privacy-policy" className="text-gray-600 hover:text-purple-600 transition-colors">Privacy policy</a></li>
             </ul>
           </div>
         </div>

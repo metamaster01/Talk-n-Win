@@ -149,10 +149,10 @@ export default function ContactPage() {
                     <div className="flex-1">
                       <h3 className="text-sm font-semibold text-gray-900 mb-1">Email</h3>
                       <a
-                        href="mailto:info@trupti.com"
+                        href="mailto:trupti.speaks@gmail.com"
                         className="text-lg font-bold bg-gradient-to-r from-purple-600 to-fuchsia-600 bg-clip-text text-transparent hover:from-purple-700 hover:to-fuchsia-700 transition-all"
                       >
-                        info@trupti.com
+                        trupti.speaks@gmail.com
                       </a>
                       <p className="text-xs text-gray-500 mt-1">
                         (Typical response time: 24 hours)

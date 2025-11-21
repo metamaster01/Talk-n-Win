@@ -3,6 +3,7 @@
 import { motion } from "framer-motion"
 import Image from "next/image"
 import { CheckCircle2 } from "lucide-react"
+import Link from "next/link"
 
 const features = [
   "Learn At Your Own Pace",
@@ -98,7 +99,10 @@ export default function ConfidenceSection() {
             whileTap={{ scale: 0.95 }}
             className="bg-[#a855f7] hover:bg-[#9333ea] text-white font-semibold py-3 px-8 rounded-full transition-colors duration-300"
           >
+            <Link href="/courses" className="text-white text-lg font-medium">
+            
             Explore Course
+            </Link>
           </motion.button>
         </motion.div>
       </div>

@@ -1,11 +1,13 @@
 "use client"
 
+import { Link2 } from "lucide-react"
 import { motion } from "motion/react"
 import Image from "next/image"
+import Link from "next/link"
 
 export default function CommunicatorSection() {
   return (
-    <section className="w-full py-20 px-4 md:px-8 lg:px-16 bg-white">
+    <section id="about" className="w-full py-20 px-4 md:px-8 lg:px-16 bg-white">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-16">
@@ -99,7 +101,9 @@ export default function CommunicatorSection() {
               whileTap={{ scale: 0.95 }}
               className="mt-8 bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-full font-poppins font-semibold transition-colors duration-300"
             >
+              <Link href="/courses" className="text-white text-lg font-medium">
               Explore Her Courses
+              </Link>
             </motion.button>
           </motion.div>
         </div>

@@ -185,7 +185,7 @@
 import { motion } from "framer-motion"
 import { ChevronRight } from "lucide-react"
 import { BackgroundPaths } from "./ui/shadcn-io/background-paths"
-
+import Link from "next/link"
 export default function HeroSection() {
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -266,9 +266,13 @@ export default function HeroSection() {
                 }}
                 whileTap={{ scale: 0.98 }}
                 className="px-8 py-3 md:py-4 bg-black text-white rounded-full font-bold text-base md:text-lg hover:bg-gray-900 transition-all duration-300 flex items-center justify-center gap-2 group w-full sm:w-auto"
+                
               >
+                <Link href="#demo-class"  className="flex items-center justify-center">
                 Join the Program
+                
                 <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
               </motion.button>
 
               <motion.button
@@ -279,8 +283,11 @@ export default function HeroSection() {
                 whileTap={{ scale: 0.98 }}
                 className="px-8 py-3 md:py-4 bg-white text-purple-600 rounded-full font-bold text-base md:text-lg border-2 border-white hover:bg-white/90 transition-all duration-300 flex items-center justify-center gap-2 group w-full sm:w-auto"
               >
+                <Link href="/courses" className="flex items-center justify-center">
+                
                 Explore Courses
                 <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
               </motion.button>
             </motion.div>
 
