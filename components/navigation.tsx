@@ -162,6 +162,7 @@ import {
   X,
   LogOut,
   User,
+  HomeIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@supabase/supabase-js";
@@ -527,8 +528,15 @@ export default function Navigation() {
                         onClick={() => router.push("/dashboard")}
                         className="flex w-full items-center gap-2 px-3 py-2 hover:bg-gray-50"
                       >
-                        <User className="w-3 h-3" />
+                        <HomeIcon className="w-3 h-3" />
                         <span>Dashboard</span>
+                      </button>
+                      <button
+                        onClick={() => router.push("/account")}
+                        className="flex w-full items-center gap-2 px-3 py-2 hover:bg-gray-50"
+                      >
+                        <User className="w-3 h-3" />
+                        <span>Account</span>
                       </button>
                       <button
                         onClick={handleLogout}
