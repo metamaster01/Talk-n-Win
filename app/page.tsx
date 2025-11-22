@@ -10,6 +10,7 @@ import HeroSection from "@/components/hero-section";
 import LearningCards from "@/components/learning-cards";
 import Navigation from "@/components/navigation";
 import ProgramTargetSection from "@/components/program-target-section";
+import RecentActivity from "@/components/RecentActivity";
 import StatsSection from "@/components/stats-section";
 import TestimonialsSection from "@/components/testimonial-section";
 import { fetchPublicCourses } from "@/lib/supabase-course";
@@ -24,6 +25,7 @@ const courses = await fetchPublicCourses(9);
       {/* <Navigation /> */}
       <HeroSection />
       <StatsSection />
+      <RecentActivity />
       <FeaturedCourses courses={courses}/>
       <DemoClassShowcase />
       <ConfidenceSection />
