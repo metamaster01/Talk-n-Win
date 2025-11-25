@@ -2,15 +2,16 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
+// import { createClient } from "@supabase/supabase-js";
 import { Loader2 } from "lucide-react";
+import { supabaseServer } from "@/lib/supabase-course";
 
-function supabaseBrowser() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+// function supabaseServer() {
+//   return createClient(
+//     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+//     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+//   );
+// }
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -35,7 +36,7 @@ export default function ResetPasswordPage() {
     }
 
     setLoading(true);
-    const supabase = supabaseBrowser();
+    const supabase = supabaseServer();
     try {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) {

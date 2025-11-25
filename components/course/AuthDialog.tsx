@@ -1,15 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@supabase/supabase-js";
+// import { createClient } from "@supabase/supabase-js";
+import { supabaseServer } from "@/lib/supabase-course";
 import { X } from "lucide-react";
 
-function supa() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+// function supa() {
+//   return createClient(
+//     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+//     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+//   );
+// }
 
 type Props = { open: boolean; onOpenChange: (v: boolean) => void };
 
@@ -29,7 +30,7 @@ export default function AuthDialog({ open, onOpenChange }: Props) {
     const password = String(fd.get("password"));
     const full_name = String(fd.get("full_name") || "");
     const phone = String(fd.get("phone") || "");
-    const client = supa();
+    const client = supabaseServer();
 
     try {
       if (mode === "signup") {
@@ -56,7 +57,7 @@ export default function AuthDialog({ open, onOpenChange }: Props) {
   };
 
   const handleGoogle = async () => {
-    const client = supa();
+    const client = supabaseServer();
     const { error } = await client.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: window.location.href },

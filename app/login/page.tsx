@@ -8,7 +8,7 @@
 // // import { Loader2 } from "lucide-react";
 
 // // // ---------- Supabase client (browser) ----------
-// // function supabaseBrowser() {
+// // function supabaseServer() {
 // //   return createClient(
 // //     process.env.NEXT_PUBLIC_SUPABASE_URL!,
 // //     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -48,7 +48,7 @@
 // //   const handleGoogleSignIn = async () => {
 // //     setError(null);
 // //     setLoading(true);
-// //     const supabase = supabaseBrowser();
+// //     const supabase = supabaseServer();
 // //     try {
 // //       const { error } = await supabase.auth.signInWithOAuth({
 // //         provider: "google",
@@ -74,7 +74,7 @@
 // //     setError(null);
 // //     setLoading(true);
 
-// //     const supabase = supabaseBrowser();
+// //     const supabase = supabaseServer();
 
 // //     try {
 // //       if (mode === "signup") {
@@ -363,7 +363,7 @@
 // import { Loader2 } from "lucide-react";
 
 // // ---------- Supabase client (browser) ----------
-// function supabaseBrowser() {
+// function supabaseServer() {
 //   return createClient(
 //     process.env.NEXT_PUBLIC_SUPABASE_URL!,
 //     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -408,7 +408,7 @@
 //   const handleGoogleSignIn = async () => {
 //     setError(null);
 //     setLoading(true);
-//     const supabase = supabaseBrowser();
+//     const supabase = supabaseServer();
 //     try {
 //       const { error } = await supabase.auth.signInWithOAuth({
 //         provider: "google",
@@ -430,7 +430,7 @@
 //     setError(null);
 //     setLoading(true);
 
-//     const supabase = supabaseBrowser();
+//     const supabase = supabaseServer();
 
 //     try {
 //       if (mode === "signup") {
@@ -706,16 +706,17 @@ import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Lottie from "lottie-react";
 import Image from "next/image";
-import { createClient } from "@supabase/supabase-js";
+// import { createClient } from "@supabase/supabase-js";
+import { supabaseServer } from "@/lib/supabase-course";
 import { Loader2 } from "lucide-react";
 
 // ---------- Supabase client (browser) ----------
-function supabaseBrowser() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+// function supabaseServer() {
+//   return createClient(
+//     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+//     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+//   );
+// }
 
 type Mode = "signup" | "login";
 
@@ -755,7 +756,7 @@ function LoginPageContent() {
     setError(null);
     setInfo(null);
     setLoading(true);
-    const supabase = supabaseBrowser();
+    const supabase = supabaseServer();
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
@@ -777,7 +778,7 @@ function LoginPageContent() {
     setInfo(null);
     setLoading(true);
 
-    const supabase = supabaseBrowser();
+    const supabase = supabaseServer();
 
     try {
       if (mode === "signup") {
@@ -846,7 +847,7 @@ function LoginPageContent() {
     }
 
     setResetLoading(true);
-    const supabase = supabaseBrowser();
+    const supabase = supabaseServer();
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,

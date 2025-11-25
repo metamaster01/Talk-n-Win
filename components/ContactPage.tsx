@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@supabase/supabase-js";
+// import { createClient } from "@supabase/supabase-js";
+import { supabaseServer } from "@/lib/supabase-course";
 import { Phone, Mail, MapPin, Send, CheckCircle2, Sparkles, Clock } from "lucide-react";
 
 // Initialize Supabase
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
-);
+// const supabase = createClient(
+//   process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+//   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+// );
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -47,7 +48,7 @@ export default function ContactPage() {
     }
 
     try {
-      const { error: insertError } = await supabase
+      const { error: insertError } = await supabaseServer()
         .from("contact")
         .insert([formData]);
 

@@ -9,7 +9,7 @@
 // import comingSoonAnimation from "@/public/coming-soon.json"; // make sure file exists
 // import { createClient } from "@supabase/supabase-js";
 
-// function supabaseBrowser() {
+// function supabaseServer() {
 //   return createClient(
 //     process.env.NEXT_PUBLIC_SUPABASE_URL!,
 //     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -60,7 +60,7 @@
 //   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
 //   useEffect(() => {
-//     const supa = supabaseBrowser();
+//     const supa = supabaseServer();
 
 //     (async () => {
 //       // 1) Auth
@@ -174,7 +174,7 @@
 //   }, [courses, section, search]);
 
 //   const handleLogout = async () => {
-//     const supa = supabaseBrowser();
+//     const supa = supabaseServer();
 //     await supa.auth.signOut();
 //     router.push("/");
 //   };
@@ -477,14 +477,18 @@ import Image from "next/image";
 import { LogOut, Search, MessageCircle, Bookmark, ChevronRight } from "lucide-react";
 import Lottie from "lottie-react";
 import comingSoonAnimation from "@/public/coming-soon.json"; // make sure file exists
-import { createClient } from "@supabase/supabase-js";
+// import { createClient } from "@supabase/supabase-js";
+// import { supabaseServer } from "@/lib/supabase-browser";
+import { supabaseServer } from "@/lib/supabase-course";
 
-function supabaseBrowser() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+// function supabaseServer() {
+//   return createClient(
+//     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+//     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+//   );
+// }
+
+
 
 /** Always resolve thumbnails from Supabase `public-thumbnails` bucket */
 function getThumbnailUrl(path: string | null): string {
@@ -551,7 +555,7 @@ export default function DashboardPage() {
   const [showMoreSheet, setShowMoreSheet] = useState(false);
 
   useEffect(() => {
-    const supa = supabaseBrowser();
+    const supa = supabaseServer();
 
     (async () => {
       // 1) Auth
@@ -665,7 +669,7 @@ export default function DashboardPage() {
   }, [courses, section, search]);
 
   const handleLogout = async () => {
-    const supa = supabaseBrowser();
+    const supa = supabaseServer();
     await supa.auth.signOut();
     router.push("/");
   };

@@ -16,15 +16,16 @@ import {
   StarHalf,
   UserCircle
 } from "lucide-react";
-import { createClient } from "@supabase/supabase-js";
+// import { createClient } from "@supabase/supabase-js";
+import { supabaseServer } from "@/lib/supabase-course";
 import { CourseReview } from "@/lib/supabase-course";
 
-function supabaseBrowser() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+// function supabaseServer() {
+//   return createClient(
+//     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+//     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+//   );
+// }
 
 /* ---------- Types (align with your schema) ---------- */
 
@@ -99,7 +100,7 @@ export default function CourseWatchPage() {
   const [savingProgress, setSavingProgress] = useState(false);
 
   //   useEffect(() => {
-  //     const supa = supabaseBrowser();
+  //     const supa = supabaseServer();
 
   //     (async () => {
   //       // 1) Auth
@@ -218,7 +219,7 @@ export default function CourseWatchPage() {
   //   }, [router, slug]);
 
   useEffect(() => {
-    const supa = supabaseBrowser();
+    const supa = supabaseServer();
 
     (async () => {
       // 1) Auth
@@ -384,7 +385,7 @@ export default function CourseWatchPage() {
   const handleMarkComplete = async () => {
     if (!course || !selectedLesson) return;
     setSavingProgress(true);
-    const supa = supabaseBrowser();
+    const supa = supabaseServer();
 
     try {
       const { data: authData } = await supa.auth.getUser();
@@ -439,7 +440,7 @@ export default function CourseWatchPage() {
   };
 
   const handleDownloadAttachment = async (att: AttachmentRow) => {
-    const supa = supabaseBrowser();
+    const supa = supabaseServer();
     const { data, error } = await supa.storage
       .from("private_attachments")
       .createSignedUrl(att.file_path, 60); // 60s
@@ -891,7 +892,7 @@ function CommentsTab({
 
   // Load reviews + enrollment + existing review
   useEffect(() => {
-    const supa = supabaseBrowser();
+    const supa = supabaseServer();
 
     (async () => {
       setLoading(true);
@@ -984,7 +985,7 @@ function CommentsTab({
     setSuccess(null);
 
     try {
-      const supa = supabaseBrowser();
+      const supa = supabaseServer();
 
       // Optional: pull display name from profiles
       const { data: profile } = await supa
@@ -1024,7 +1025,7 @@ function CommentsTab({
       setSuccess("Thanks! Your review has been saved.");
 
       // Reload list so left column updates
-      const { data: allReviews } = await supabaseBrowser()
+      const { data: allReviews } = await supabaseServer()
         .from("reviews")
         .select("id, rating, comment, created_at, display_name")
         .eq("course_id", courseId)

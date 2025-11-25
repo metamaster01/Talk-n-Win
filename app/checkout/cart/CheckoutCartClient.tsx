@@ -181,6 +181,7 @@ export default function CheckoutCartClient() {
         body: JSON.stringify({
           mode: "cart",
           userId: user.id,
+          
         }),
       });
 

@@ -340,7 +340,8 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { createClient } from "@supabase/supabase-js";
+// import { createClient } from "@supabase/supabase-js";
+import { supabaseServer } from "@/lib/supabase-course";
 import {
   BadgeCheck,
   Clock3,
@@ -355,12 +356,12 @@ import { useRouter } from "next/navigation";
 import AuthDialog from "./AuthDialog";
 import type { PublicCourse } from "@/lib/supabase-course";
 
-function client() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+// function client() {
+//   return createClient(
+//     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+//     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+//   );
+// }
 
 type Props = {
   course: PublicCourse;
@@ -413,7 +414,7 @@ export default function CourseSidebar({ course }: Props) {
 
   // Load initial status: user, enrollment, cart, wishlist
   useEffect(() => {
-    const supa = client();
+    const supa = supabaseServer();
 
     (async () => {
       const { data } = await supa.auth.getUser();
@@ -454,7 +455,7 @@ export default function CourseSidebar({ course }: Props) {
   }, [course.id]);
 
   const requireAuth = async () => {
-    const supa = client();
+    const supa = supabaseServer();
     const { data } = await supa.auth.getUser();
     if (!data.user) {
       setAuthOpen(true);
@@ -483,7 +484,7 @@ export default function CourseSidebar({ course }: Props) {
     if (!uid) return;
 
     setCartLoading(true);
-    const supa = client();
+    const supa = supabaseServer();
 
     const { error } = await supa.from("cart_items").insert({
       user_id: uid,
@@ -508,7 +509,7 @@ export default function CourseSidebar({ course }: Props) {
     if (!uid) return;
 
     setWishlistLoading(true);
-    const supa = client();
+    const supa = supabaseServer();
 
     const { error } = await supa.from("wishlist_items").insert({
       user_id: uid,

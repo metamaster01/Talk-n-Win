@@ -1,4 +1,4 @@
-import { fetchDemoClassBySlug } from "@/lib/supabase-demo";
+import { fetchDemoClassBySlug } from "@/lib/supabase-course";
 import DemoCheckoutClient from "./DemoCheckoutClient";
 
 export const dynamic = "force-dynamic";

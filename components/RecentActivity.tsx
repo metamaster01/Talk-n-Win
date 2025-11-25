@@ -1,17 +1,18 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
+// import { createClient } from "@supabase/supabase-js";
+import { supabaseServer } from "@/lib/supabase-course";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 
-function supabaseBrowser() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+// function supabaseServer() {
+//   return createClient(
+//     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+//     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+//   );
+// }
 
 /** Resolve thumbnails from Supabase `public-thumbnails` bucket */
 function getThumbnailUrl(path: string | null): string {
@@ -59,7 +60,7 @@ export default function RecentActivity() {
   const [userName, setUserName] = useState<string>("");
 
   useEffect(() => {
-    const supa = supabaseBrowser();
+    const supa = supabaseServer();
 
     (async () => {
       // 1) auth

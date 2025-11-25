@@ -2,15 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { ChevronDown, Lock, Play, FileText } from "lucide-react";
-import { createClient } from "@supabase/supabase-js";
+// import { createClient } from "@supabase/supabase-js";
+import { supabaseServer } from "@/lib/supabase-course";
 import AuthDialog from "./AuthDialog";
 
-function supa() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+// function supa() {
+//   return createClient(
+//     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+//     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+//   );
+// }
 
 type Lesson = {
   id: string;
@@ -31,7 +32,7 @@ export default function Curriculum({ courseId }: { courseId: string }) {
   const [authOpen, setAuthOpen] = useState(false);
 
   useEffect(() => {
-    const client = supa();
+    const client = supabaseServer();
     (async () => {
       const { data: modules } = await client
         .from("modules")
@@ -54,7 +55,7 @@ export default function Curriculum({ courseId }: { courseId: string }) {
   }, [courseId]);
 
   const handleLessonClick = async (lesson: Lesson) => {
-    const client = supa();
+    const client = supabaseServer();
     const { data } = await client.auth.getUser();
     if (!lesson.is_preview) {
       if (!data.user) {

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClient } from "@supabase/supabase-js";
+// import { createClient } from "@supabase/supabase-js";
+import { supabaseServer } from "@/lib/supabase-course";
 import {
   User,
   Mail,
@@ -23,17 +24,17 @@ import {
 import { useRouter } from "next/navigation";
 import { publicImageURL } from "@/lib/supabase-course";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
-);
+// const supabase = createClient(
+//   process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+//   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+// );
 
 // Helper function to get public image URL from Supabase storage
-const getPublicImageUrl = (path: string | null, bucket: string = "public_thumbnails") => {
-  if (!path) return null;
-  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-  return data.publicUrl;
-};
+// const getPublicImageUrl = (path: string | null, bucket: string = "public_thumbnails") => {
+//   if (!path) return null;
+//   const { data } = supabaseServer.storage.from(bucket).getPublicUrl(path);
+//   return data.publicUrl;
+// };
 
 interface Profile {
   id: string;
@@ -93,7 +94,7 @@ export default function AccountPage() {
   const loadData = async () => {
     try {
       // Get authenticated user
-      const { data: { user: authUser } } = await supabase.auth.getUser();
+      const { data: { user: authUser } } = await supabaseServer().auth.getUser();
       if (!authUser) {
         router.push("/login");
         return;
@@ -101,19 +102,19 @@ export default function AccountPage() {
       setUser(authUser);
 
       // Load profile
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", authUser.id)
-        .single();
-
-      if (profileData) {
-        setProfile(profileData);
-        setEditProfile(profileData);
-      }
+            const { data: profileData } = await supabaseServer()
+              .from("profiles")
+              .select("*")
+              .eq("id", authUser.id)
+              .single();
+      
+            if (profileData) {
+              setProfile(profileData);
+              setEditProfile(profileData);
+            }
 
       // Load courses
-      const { data: coursesData } = await supabase
+      const { data: coursesData } = await supabaseServer()
         .from("my_courses")
         .select("*")
         .eq("user_id", authUser.id);
@@ -121,7 +122,7 @@ export default function AccountPage() {
       setCourses(coursesData || []);
 
       // Load reviews with course info
-      const { data: reviewsData } = await supabase
+      const { data: reviewsData } = await supabaseServer()
         .from("reviews")
         .select(`
           *,
@@ -143,7 +144,7 @@ export default function AccountPage() {
     setSaving(true);
 
     try {
-      const { error } = await supabase
+      const { error } = await supabaseServer()
         .from("profiles")
         .update({
           full_name: editProfile.full_name,

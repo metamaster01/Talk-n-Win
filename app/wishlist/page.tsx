@@ -1,17 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
+// import { createClient } from "@supabase/supabase-js";
+import { supabaseServer } from "@/lib/supabase-course";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Loader2, Trash2 } from "lucide-react";
 
-function supabaseBrowser() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+// function supabaseServer() {
+//   return createClient(
+//     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+//     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+//   );
+// }
 
 type WishlistItemWithCourse = {
   id: string;
@@ -39,7 +40,7 @@ export default function WishlistPage() {
   };
 
   useEffect(() => {
-    const supa = supabaseBrowser();
+    const supa = supabaseServer();
     (async () => {
       const { data } = await supa.auth.getUser();
       if (!data.user) {
@@ -91,7 +92,7 @@ export default function WishlistPage() {
   }, [router]);
 
   const removeItem = async (id: string) => {
-    const supa = supabaseBrowser();
+    const supa = supabaseServer();
     const { error } = await supa
       .from("wishlist_items")
       .delete()

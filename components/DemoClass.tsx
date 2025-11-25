@@ -1,16 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
+// import { createClient } from "@supabase/supabase-js";
+import { supabaseServer } from "@/lib/supabase-course";
 import { Sparkles, Clock, Users, Video, CheckCircle, ArrowRight, Star } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 // Initialize Supabase (you'll use your env vars)
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
-);
+// const supabase = createClient(
+//   process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+//   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+// );
 
 interface DemoClass {
   id: string;
@@ -40,7 +41,7 @@ export default function DemoClassShowcase() {
 
   const fetchDemoClass = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseServer()
         .from("demo_classes")
         .select("*")
         .eq("is_active", true)
@@ -51,7 +52,7 @@ export default function DemoClassShowcase() {
       setDemoClass(data);
 
       // Get enrollment count
-      const { count } = await supabase
+      const { count } = await supabaseServer()
         .from("demo_enrollments")
         .select("*", { count: "exact", head: true })
         .eq("demo_class_id", data.id);

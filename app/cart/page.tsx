@@ -1,17 +1,19 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { createClient } from "@supabase/supabase-js";
+// import { createClient } from "@supabase/supabase-js";
+// import { supabaseServer } from "@/lib/supabase-course";
+import { supabaseServer } from "@/lib/supabase-browser";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Trash2, Loader2 } from "lucide-react";
 
-function supabaseBrowser() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+// function supabaseServer() {
+//   return createClient(
+//     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+//     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+//   );
+// }
 
 type CartItemWithCourse = {
   id: string;
@@ -39,7 +41,7 @@ export default function CartPage() {
   };
 
   useEffect(() => {
-    const supa = supabaseBrowser();
+    const supa = supabaseServer();
     (async () => {
       const { data } = await supa.auth.getUser();
       if (!data.user) {
@@ -108,7 +110,7 @@ export default function CartPage() {
   }, [items]);
 
   const removeItem = async (id: string) => {
-    const supa = supabaseBrowser();
+    const supa = supabaseServer();
     const { error } = await supa.from("cart_items").delete().eq("id", id);
     if (error) {
       console.error("Remove cart error:", error);
