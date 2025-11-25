@@ -11,7 +11,7 @@ interface StatCard {
 }
 
 const stats: StatCard[] = [
-  { number: "5K+", label: "Active Students", finalValue: 5000 },
+  { number: "1K+", label: "Active Students", finalValue: 1000 },
   { number: "5", label: "Total Courses", finalValue: 5 },
   { number: "98%", label: "Satisfaction Rate", finalValue: 98 },
 ]
@@ -44,7 +44,7 @@ function CounterAnimation({ targetValue, isSuffix }: { targetValue: number; isSu
   return (
     <span ref={ref}>
       {displayValue}
-      {isSuffix ? (targetValue === 1000 ? "" : "%") : ""}
+      {isSuffix ? (targetValue === 1000 ? " " : "%") : ""}
     </span>
   )
 }
