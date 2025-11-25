@@ -2,16 +2,19 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
+// import { createClient } from "@supabase/supabase-js";
+// import { supabaseServer } from "@/lib/supabase-course";
+import { supabaseServer } from "@/lib/supabase-course";
+// import { supabaseServer } from "@/lib/supabase-browser";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 
-function supabaseBrowser() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+// function supabaseServer() {
+//   return createClient(
+//     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+//     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+//   );
+// }
 
 declare global {
   interface Window {
@@ -53,7 +56,7 @@ export default function CheckoutCartClient() {
 
   // Load user + profile + cart items
   useEffect(() => {
-    const supa = supabaseBrowser();
+    const supa = supabaseServer();
     (async () => {
       const { data } = await supa.auth.getUser();
       if (!data.user) {

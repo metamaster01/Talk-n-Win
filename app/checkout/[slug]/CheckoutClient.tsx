@@ -2,17 +2,19 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
+// import { createClient } from "@supabase/supabase-js";
+import { supabaseServer } from "@/lib/supabase-course";
+// import { supabaseServer } from "@/lib/supabase-browser";
 import type { PublicCourse } from "@/lib/supabase-course";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 
-function supabaseBrowser() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+// function supabaseServer() {
+//   return createClient(
+//     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+//     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+//   );
+// }
 
 declare global {
   interface Window {
@@ -44,7 +46,7 @@ export default function CheckoutClient({ course }: Props) {
 
   // Load user and profile
   useEffect(() => {
-    const supabase = supabaseBrowser();
+    const supabase = supabaseServer();
     (async () => {
       const { data } = await supabase.auth.getUser();
       if (!data.user) {
@@ -107,7 +109,7 @@ export default function CheckoutClient({ course }: Props) {
       const checkoutRes = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ courseId: course.id, userId: user.id }),
+        body: JSON.stringify({ mode: "single",courseId: course.id, userId: user.id }),
       });
 
       const checkoutData = await checkoutRes.json();
@@ -141,6 +143,7 @@ export default function CheckoutClient({ course }: Props) {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
+                mode : "single",
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,

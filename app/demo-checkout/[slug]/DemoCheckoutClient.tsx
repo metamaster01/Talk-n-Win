@@ -2,15 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
+// import { createClient } from "@supabase/supabase-js";
+import { supabaseServer } from "@/lib/supabase-course";
 import { Loader2, CheckCircle2, Sparkles, Clock, Video } from "lucide-react";
 
-function supabaseBrowser() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+// function supabaseServer() {
+//   return createClient(
+//     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+//     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+//   );
+// }
 
 declare global {
   interface Window {
@@ -50,7 +51,7 @@ export default function DemoCheckoutClient({ demoClass }: Props) {
 
   // Load user and profile
   useEffect(() => {
-    const supabase = supabaseBrowser();
+    const supabase = supabaseServer();
     (async () => {
       const { data } = await supabase.auth.getUser();
       if (!data.user) {
@@ -111,7 +112,7 @@ export default function DemoCheckoutClient({ demoClass }: Props) {
     try {
       if (isFree) {
         // Direct enrollment for free demo
-        const supabase = supabaseBrowser();
+        const supabase = supabaseServer();
         const { error: enrollError } = await supabase
           .from("demo_enrollments")
           .insert({
