@@ -294,9 +294,9 @@ export default function HeroSection() {
             {/* Stats or Trust Indicators */}
             <motion.div variants={itemVariants} className="mt-12 flex flex-wrap gap-8">
               {[
-                { number: "10K+", label: "Students" },
+                { number: "1K+", label: "Students" },
                 { number: "95%", label: "Success Rate" },
-                { number: "50+", label: "Courses" },
+                { number: "5+", label: "Courses" },
               ].map((stat, index) => (
                 <motion.div key={stat.label} whileHover={{ scale: 1.05 }} className="flex flex-col">
                   <span className="text-2xl md:text-3xl font-bold text-white">{stat.number}</span>
