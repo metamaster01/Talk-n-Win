@@ -29,18 +29,18 @@
 // };
 
 // export function publicImageURL(pathOrUrl?: string | null): string | null {
-//   if (!pathOrUrl) return null;
-//   if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl; // already absolute
-//   const supabase = supabaseServer();
-//   const { data } = supabase.storage
-//     .from("public-thumbnails")
-//     .getPublicUrl(pathOrUrl);
-//   return data.publicUrl ?? null;
-// }
-
-// export async function fetchPublicCourses(limit = 12): Promise<PublicCourse[]> {
-//   const supabase = supabaseServer();
-//   const { data, error } = await supabase
+  //   if (!pathOrUrl) return null;
+  //   if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl; // already absolute
+  //   const supabase = supabaseServer();
+  //   const { data } = supabase.storage
+  //     .from("public-thumbnails")
+  //     .getPublicUrl(pathOrUrl);
+  //   return data.publicUrl ?? null;
+  // }
+  
+  // export async function fetchPublicCourses(limit = 12): Promise<PublicCourse[]> {
+    //   const supabase = supabaseServer();
+    //   const { data, error } = await supabase
 //     .from("public_courses")
 //     .select("*")
 //     .order("created_at", { ascending: false })
@@ -72,15 +72,15 @@
 // }
 
 // export async function fetchRelatedCourses(
-//   categoryId: string,
-//   excludeCourseId: string,
-//   limit = 6
-// ) {
-//   const s = supabaseServer();
-//   const { data } = await s
-//     .from("public_courses")
-//     .select("*")
-//     .eq("category_id", categoryId)
+  //   categoryId: string,
+  //   excludeCourseId: string,
+  //   limit = 6
+  // ) {
+    //   const s = supabaseServer();
+    //   const { data } = await s
+    //     .from("public_courses")
+    //     .select("*")
+    //     .eq("category_id", categoryId)
 //     .neq("id", excludeCourseId)
 //     .limit(limit);
 //   return (data || []).map((c: any) => {
@@ -92,6 +92,7 @@
 //   });
 // }
 
+export const revalidate = 15;
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 let browserClient: SupabaseClient | null = null;
@@ -160,6 +161,7 @@ export function publicImageURL(pathOrUrl?: string | null): string | null {
   const { data } = s.storage.from('public-thumbnails').getPublicUrl(pathOrUrl);
   return data.publicUrl ?? null;
 }
+
 
 export async function fetchPublicCourses(limit = 12): Promise<PublicCourse[]> {
   const s = supabaseServer();
