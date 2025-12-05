@@ -1159,6 +1159,22 @@ export default function Navigation() {
             </div>
 
             {/* Explore button (desktop) */}
+            <div className="flex items-center gap-2">
+
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              className="hidden md:block"
+            >
+              <Link
+                href="/demo-class"
+                className="px-6 py-2.5 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white rounded-lg font-medium text-sm hover:shadow-lg transition-shadow duration-300"
+              >
+                Demo Session
+              </Link>
+            </motion.div>
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -1172,6 +1188,7 @@ export default function Navigation() {
                 Explore Courses
               </Link>
             </motion.div>
+            </div>
 
             {/* Right side (mobile) */}
             <div className="flex items-center gap-2 md:hidden">
