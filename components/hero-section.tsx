@@ -268,7 +268,7 @@ export default function HeroSection() {
                 className="px-8 py-3 md:py-4 bg-black text-white rounded-full font-bold text-base md:text-lg hover:bg-gray-900 transition-all duration-300 flex items-center justify-center gap-2 group w-full sm:w-auto"
                 
               >
-                <Link href="#demo-class"  className="flex items-center justify-center">
+                <Link href="/demo-class"  className="flex items-center justify-center">
                 Join the Program
                 
                 <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
