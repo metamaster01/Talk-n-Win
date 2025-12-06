@@ -7,6 +7,7 @@ import Script from "next/script";
 import "./globals.css";
 import Navigation from "@/components/navigation";
 import Footer from "@/components/footer";
+import FloatingWhatsApp from "@/components/FloatingWhatsapp";
 
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["700"] });
 const poppins = Poppins({
@@ -78,8 +79,9 @@ export default function RootLayout({
             alt=""
           />
         </noscript>
-
-    
+        
+        {/* Floating WhatsApp Button */}
+        <FloatingWhatsApp />
       </body>
     </html>
   );
