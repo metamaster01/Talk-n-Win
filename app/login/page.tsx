@@ -761,7 +761,7 @@ function LoginPageContent() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo: `${window.location.origin}${searchParams.get("redirect") || "/dashboard"}`,
         },
       });
       if (error) setError(error.message);
@@ -808,7 +808,9 @@ function LoginPageContent() {
           });
         }
 
-        router.push("/dashboard");
+        // Redirect to the page user came from, or dashboard as fallback
+        const redirectTo = searchParams.get("redirect") || "/dashboard";
+        router.push(redirectTo);
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
@@ -822,7 +824,8 @@ function LoginPageContent() {
         }
 
         if (data.session) {
-          router.push("/dashboard");
+             const redirectTo = searchParams.get("redirect") || "/dashboard";
+        router.push(redirectTo);
         }
       }
     } catch (err: any) {
