@@ -14,11 +14,13 @@ import {
   Play,
   Star,
   StarHalf,
-  UserCircle
+  UserCircle,
 } from "lucide-react";
 // import { createClient } from "@supabase/supabase-js";
-import { supabaseServer } from "@/lib/supabase-course";
+import { supabaseBrowser } from "@/lib/supabase-course";
 import { CourseReview } from "@/lib/supabase-course";
+import AssignmentPanel from "@/components/Assignment/CourseAssignment";
+import QuizIntroPanel from "./QuizIntroPanel";
 
 // function supabaseServer() {
 //   return createClient(
@@ -60,6 +62,7 @@ type LessonRow = {
 
 type ProgressRow = {
   lesson_id: string;
+  assignment_id?: string;
   course_id: string;
   is_completed: boolean;
   watched_seconds: number;
@@ -84,6 +87,52 @@ type ModuleWithLessons = ModuleRow & {
 
 type TabKey = "description" | "notes" | "files" | "comments";
 
+type AssignmentRow = {
+  id: string;
+  course_id: string;
+  module_id: string;
+  title: string;
+  description: string | null;
+  submission_type: "video" | "file" | "text";
+  min_duration_seconds: number | null;
+  max_duration_seconds: number | null;
+  prompt_cloudflare_video_id: string | null;
+  position: number;
+};
+
+type AssignmentWithProgress = AssignmentRow & {
+  completed: boolean;
+};
+
+type QuizWithProgress = QuizRow & {
+  completed: boolean;
+};
+
+type CurriculumItem =
+  | ({ kind: "lesson" } & LessonWithProgress)
+  | ({ kind: "assignment" } & AssignmentWithProgress)
+  | ({kind: "quiz"} & QuizWithProgress) ;
+
+type ModuleWithItems = ModuleRow & {
+  items: CurriculumItem[];
+};
+
+  
+type QuizRow = {
+  id: string;
+  course_id: string;
+  module_id: string;
+  title: string;
+  description: string | null;
+  total_points: number;
+  pass_points: number | null;
+  time_limit_seconds: number | null;
+  position: number;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
 /* ---------- Page component ---------- */
 
 export default function CourseWatchPage() {
@@ -93,9 +142,16 @@ export default function CourseWatchPage() {
 
   const [loading, setLoading] = useState(true);
   const [course, setCourse] = useState<CourseRow | null>(null);
-  const [modules, setModules] = useState<ModuleWithLessons[]>([]);
   const [attachments, setAttachments] = useState<AttachmentRow[]>([]);
-  const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
+  // const [modules, setModules] = useState<ModuleWithLessons[]>([]);
+  // const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
+
+  const [modules, setModules] = useState<ModuleWithItems[]>([]);
+  const [selectedItem, setSelectedItem] = useState<{
+    kind: "lesson" | "assignment" | "quiz";
+    id: string;
+  } | null>(null);
+
   const [activeTab, setActiveTab] = useState<TabKey>("description");
   const [savingProgress, setSavingProgress] = useState(false);
 
@@ -218,11 +274,157 @@ export default function CourseWatchPage() {
   //     })();
   //   }, [router, slug]);
 
+  // useEffect(() => {
+  //   const supa = supabaseServer();
+
+  //   (async () => {
+  //     // 1) Auth
+  //     const { data: authData } = await supa.auth.getUser();
+  //     const user = authData.user;
+  //     if (!user) {
+  //       router.push(`/login?mode=login&redirect=/dashboard/course/${slug}`);
+  //       return;
+  //     }
+
+  //     // 2) Ensure user is enrolled – from my_courses view
+  //     const { data: myCourse, error: myCourseError } = await supa
+  //       .from("my_courses")
+  //       .select(
+  //         "id, title, slug, short_description, full_description, thumbnail_url"
+  //       )
+  //       .eq("slug", slug)
+  //       .eq("user_id", user.id)
+  //       .single();
+
+  //     if (myCourseError || !myCourse) {
+  //       console.error("my_courses load error:", myCourseError);
+  //       router.push(`/courses/${slug}`); // not enrolled → go to public page
+  //       return;
+  //     }
+
+  //     setCourse(myCourse as any as CourseRow);
+  //     const courseId = myCourse.id as string;
+
+  //     // 3) Load modules, lessons, progress in parallel
+  //     const [
+  //       { data: modRows, error: modErr },
+  //       { data: lessonRows, error: lessonErr },
+  //       { data: progRows, error: progErr },
+  //       { data: assignmentRows, error: assignErr },
+  //       { data: subRows, error: subErr },
+
+  //     ] = await Promise.all([
+  //       supa
+  //         .from("modules")
+  //         .select("id, course_id, title, description, position")
+  //         .eq("course_id", courseId)
+  //         .order("position"),
+  //       supa
+  //         .from("lessons")
+  //         .select(
+  //           "id, course_id, module_id, title, description, duration_seconds, cloudflare_video_id, position, lecture_notes"
+  //         )
+  //         .eq("course_id", courseId)
+  //         .order("position"),
+  //         supa.from("assignments")
+  //     .select("id, course_id, module_id, title, description, submission_type, min_duration_seconds, max_duration_seconds, prompt_cloudflare_video_id, position")
+  //     .eq("course_id", courseId)
+  //     .order("position"),
+
+  //       // supa
+  //       //   .from("progress")
+  //       //   .select("lesson_id, course_id, is_completed, watched_seconds")
+  //       //   .eq("user_id", user.id)
+  //       //   .eq("course_id", courseId),
+
+  //         supa.from("progress").select("lesson_id, assignment_id, is_completed, watched_seconds")
+  //     .eq("user_id", user.id)
+  //     .eq("course_id", courseId),
+  // supa.from("assignment_submissions")
+  //     .select("assignment_id")
+  //     .eq("user_id", user.id)
+  //     .eq("course_id", courseId),
+  //     ]);
+
+  //     if (modErr) console.error("Modules error:", modErr);
+  //     if (lessonErr) console.error("Lessons error:", lessonErr);
+  //     if (progErr) console.error("Progress error:", progErr);
+
+  //     const lessonList = (lessonRows ?? []) as LessonRow[];
+  //     const progressList = (progRows ?? []) as ProgressRow[];
+
+  //     // 4) Now load ATTACHMENTS for all those lesson_ids
+  //     let attachmentList: AttachmentRow[] = [];
+  //     if (lessonList.length > 0) {
+  //       const lessonIds = lessonList.map((l) => l.id);
+  //       const { data: attachRows, error: attachErr } = await supa
+  //         .from("attachments")
+  //         .select("id, module_id, lesson_id, name, file_path")
+  //         .in("lesson_id", lessonIds)
+  //         .order("created_at", { ascending: true });
+
+  //       if (attachErr) {
+  //         console.error("Attachments error:", attachErr);
+  //       }
+
+  //       attachmentList = (attachRows ?? []) as AttachmentRow[];
+  //     }
+
+  //     // 5) Build progress maps
+  //     const progressByLesson = new Map<string, ProgressRow>();
+  //     progressList.forEach((p) => progressByLesson.set(p.lesson_id, p));
+
+  //     // 6) Group lessons by module
+  //     const moduleMap = new Map<string, ModuleWithLessons>();
+  //     (modRows ?? []).forEach((m) => {
+  //       moduleMap.set(m.id as string, {
+  //         ...(m as ModuleRow),
+  //         lessons: [],
+  //       });
+  //     });
+
+  //     lessonList.forEach((lesson) => {
+  //       const mod = moduleMap.get(lesson.module_id);
+  //       const completed = !!progressByLesson.get(lesson.id)?.is_completed;
+  //       const withProgress: LessonWithProgress = {
+  //         ...lesson,
+  //         completed,
+  //       };
+  //       if (mod) {
+  //         mod.lessons.push(withProgress);
+  //       }
+  //     });
+
+  //     // Sort lessons inside each module by position
+  //     moduleMap.forEach((m) => {
+  //       m.lessons.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+  //     });
+
+  //     const modulesArray = Array.from(moduleMap.values()).sort(
+  //       (a, b) => (a.position ?? 0) - (b.position ?? 0)
+  //     );
+
+  //     setModules(modulesArray);
+  //     setAttachments(attachmentList);
+
+  //     // Default selected lesson = first incomplete lesson, else first lesson
+  //     const flatLessons = modulesArray.flatMap((m) => m.lessons);
+  //     const firstIncomplete =
+  //       flatLessons.find((l) => !l.completed) ?? flatLessons[0];
+  //     if (firstIncomplete) {
+  //       setSelectedLessonId(firstIncomplete.id);
+  //     }
+
+  //     setLoading(false);
+  //   })();
+  // }, [router, slug]);
+
   useEffect(() => {
-    const supa = supabaseServer();
+    const supa = supabaseBrowser(); // (later we swap to supabaseBrowser)
 
     (async () => {
-      // 1) Auth
+      setLoading(true);
+
       const { data: authData } = await supa.auth.getUser();
       const user = authData.user;
       if (!user) {
@@ -230,7 +432,6 @@ export default function CourseWatchPage() {
         return;
       }
 
-      // 2) Ensure user is enrolled – from my_courses view
       const { data: myCourse, error: myCourseError } = await supa
         .from("my_courses")
         .select(
@@ -241,25 +442,27 @@ export default function CourseWatchPage() {
         .single();
 
       if (myCourseError || !myCourse) {
-        console.error("my_courses load error:", myCourseError);
-        router.push(`/courses/${slug}`); // not enrolled → go to public page
+        router.push(`/courses/${slug}`);
         return;
       }
 
       setCourse(myCourse as any as CourseRow);
       const courseId = myCourse.id as string;
 
-      // 3) Load modules, lessons, progress in parallel
       const [
         { data: modRows, error: modErr },
         { data: lessonRows, error: lessonErr },
+        { data: assignmentRows, error: assignErr },
         { data: progRows, error: progErr },
+        { data: subRows, error: subErr },
+        { data: quizRows, error: quizErr}
       ] = await Promise.all([
         supa
           .from("modules")
           .select("id, course_id, title, description, position")
           .eq("course_id", courseId)
           .order("position"),
+
         supa
           .from("lessons")
           .select(
@@ -267,105 +470,182 @@ export default function CourseWatchPage() {
           )
           .eq("course_id", courseId)
           .order("position"),
+
+        supa
+          .from("assignments")
+          .select(
+            "id, course_id, module_id, title, description, submission_type, min_duration_seconds, max_duration_seconds, prompt_cloudflare_video_id, position"
+          )
+          .eq("course_id", courseId)
+          .order("position"),
+
         supa
           .from("progress")
           .select("lesson_id, course_id, is_completed, watched_seconds")
           .eq("user_id", user.id)
           .eq("course_id", courseId),
+
+        supa
+          .from("assignment_submissions")
+          .select("assignment_id")
+          .eq("user_id", user.id)
+          .eq("course_id", courseId),
+
+        supa
+          .from("quizzes")
+          .select(
+            "id, course_id, module_id, title, description, total_points, position"
+          )
+          .eq("course_id", courseId)
+          .eq("is_published", true)
+          .order("position"),
       ]);
 
-      if (modErr) console.error("Modules error:", modErr);
-      if (lessonErr) console.error("Lessons error:", lessonErr);
-      if (progErr) console.error("Progress error:", progErr);
+      if (modErr) console.error(modErr);
+      if (lessonErr) console.error(lessonErr);
+      if (assignErr) console.error(assignErr);
+      if (progErr) console.error(progErr);
+      if (subErr) console.error(subErr);
+      if (quizErr) console.error(quizErr);
 
       const lessonList = (lessonRows ?? []) as LessonRow[];
       const progressList = (progRows ?? []) as ProgressRow[];
+      const assignmentList = (assignmentRows ?? []) as AssignmentRow[];
+      const quizList = (quizRows ?? []) as QuizRow[];
 
-      // 4) Now load ATTACHMENTS for all those lesson_ids
+      // attachments (same as you had)
       let attachmentList: AttachmentRow[] = [];
-      if (lessonList.length > 0) {
+      if (lessonList.length) {
         const lessonIds = lessonList.map((l) => l.id);
-        const { data: attachRows, error: attachErr } = await supa
+        const { data: attachRows } = await supa
           .from("attachments")
           .select("id, module_id, lesson_id, name, file_path")
           .in("lesson_id", lessonIds)
           .order("created_at", { ascending: true });
 
-        if (attachErr) {
-          console.error("Attachments error:", attachErr);
-        }
-
         attachmentList = (attachRows ?? []) as AttachmentRow[];
       }
 
-      // 5) Build progress maps
+      // progress maps
       const progressByLesson = new Map<string, ProgressRow>();
-      progressList.forEach((p) => progressByLesson.set(p.lesson_id, p));
+      progressList.forEach((p) => {
+        if (p.lesson_id) progressByLesson.set(p.lesson_id, p);
+      });
 
-      // 6) Group lessons by module
-      const moduleMap = new Map<string, ModuleWithLessons>();
+      const submittedAssignments = new Set(
+        (subRows ?? []).map((s) => s.assignment_id)
+      );
+
+      // build modules WITH items
+      const moduleMap = new Map<string, ModuleWithItems>();
       (modRows ?? []).forEach((m) => {
-        moduleMap.set(m.id as string, {
-          ...(m as ModuleRow),
-          lessons: [],
-        });
+        moduleMap.set(m.id, { ...(m as ModuleRow), items: [] });
       });
 
       lessonList.forEach((lesson) => {
         const mod = moduleMap.get(lesson.module_id);
         const completed = !!progressByLesson.get(lesson.id)?.is_completed;
-        const withProgress: LessonWithProgress = {
-          ...lesson,
-          completed,
-        };
-        if (mod) {
-          mod.lessons.push(withProgress);
-        }
+        mod?.items.push({ kind: "lesson", ...lesson, completed });
       });
 
-      // Sort lessons inside each module by position
+      assignmentList.forEach((a) => {
+        const mod = moduleMap.get(a.module_id);
+        const completed = submittedAssignments.has(a.id);
+        mod?.items.push({ kind: "assignment", ...a, completed });
+      });
+
+      
+
+      const { data: attemptRows } = await supa
+        .from("quiz_attempts")
+        .select("quiz_id")
+        .eq("user_id", user.id)
+        .eq("course_id", courseId)
+        .eq("status", "submitted");
+
+      const submittedQuizIds = new Set(
+        (attemptRows ?? []).map((a) => a.quiz_id)
+      );
+
+      quizList.forEach((q) => {
+        const mod = moduleMap.get(q.module_id);
+        // completed if user has any submitted attempt
+        const completed = submittedQuizIds.has(q.id);
+        mod?.items.push({ kind: "quiz", ...q, completed });
+      });
+
       moduleMap.forEach((m) => {
-        m.lessons.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+        m.items.sort((x, y) => (x.position ?? 0) - (y.position ?? 0));
       });
 
       const modulesArray = Array.from(moduleMap.values()).sort(
         (a, b) => (a.position ?? 0) - (b.position ?? 0)
       );
 
+
       setModules(modulesArray);
       setAttachments(attachmentList);
 
-      // Default selected lesson = first incomplete lesson, else first lesson
-      const flatLessons = modulesArray.flatMap((m) => m.lessons);
+      const flatItems = modulesArray.flatMap((m) => m.items);
       const firstIncomplete =
-        flatLessons.find((l) => !l.completed) ?? flatLessons[0];
+        flatItems.find((i) => !i.completed) ?? flatItems[0];
       if (firstIncomplete) {
-        setSelectedLessonId(firstIncomplete.id);
+        setSelectedItem({ kind: firstIncomplete.kind, id: firstIncomplete.id });
       }
 
       setLoading(false);
     })();
   }, [router, slug]);
 
+  // const selectedLesson: LessonWithProgress | null = useMemo(() => {
+  //   for (const m of modules) {
+  //     const found = m.lessons.find((l) => l.id === selectedLessonId);
+  //     if (found) return found;
+  //   }
+  //   return null;
+  // }, [modules, selectedLessonId]);
+
+  const selectedItemData = useMemo(() => {
+    for (const m of modules) {
+      const it = m.items.find(
+        (i) => i.id === selectedItem?.id && i.kind === selectedItem.kind
+      );
+      if (it) return it;
+    }
+    return null;
+  }, [modules, selectedItem]);
+
+  const selectedLesson =
+    selectedItemData?.kind === "lesson" ? selectedItemData : null;
+
+  const selectedLessonId = selectedLesson?.id ?? null;
+
   const selectedModule = useMemo(() => {
     for (const m of modules) {
-      if (m.lessons.some((l) => l.id === selectedLessonId)) return m;
+      if (m.items.some((l) => l.id === selectedLessonId)) return m;
     }
     return modules[0] ?? null;
   }, [modules, selectedLessonId]);
 
-  const selectedLesson: LessonWithProgress | null = useMemo(() => {
-    for (const m of modules) {
-      const found = m.lessons.find((l) => l.id === selectedLessonId);
-      if (found) return found;
-    }
-    return null;
-  }, [modules, selectedLessonId]);
+  const selectedModuleLegacy = useMemo(() => {
+    if (!selectedItemData) return null;
 
-  const allLessons = useMemo(
-    () => modules.flatMap((m) => m.lessons),
-    [modules]
-  );
+    const mod = modules.find((m) =>
+      m.items.some(
+        (i) => i.id === selectedItemData.id && i.kind === selectedItemData.kind
+      )
+    );
+    if (!mod) return null;
+
+    return {
+      ...mod,
+      lessons: mod.items.filter(
+        (i) => i.kind === "lesson"
+      ) as LessonWithProgress[],
+    };
+  }, [modules, selectedItemData]);
+
+  const allLessons = useMemo(() => modules.flatMap((m) => m.items), [modules]);
 
   const completedCount = allLessons.filter((l) => l.completed).length;
   const totalLessons = allLessons.length;
@@ -377,15 +657,32 @@ export default function CourseWatchPage() {
     [attachments, selectedLessonId]
   );
 
-  const handleSelectLesson = (lessonId: string) => {
-    setSelectedLessonId(lessonId);
-    setActiveTab("description");
-  };
+  const totalDurationMinutes = useMemo(() => {
+    const lessons = modules.flatMap((m) =>
+      m.items.filter((i) => i.kind === "lesson")
+    ) as LessonWithProgress[];
+
+    const mins = lessons.reduce(
+      (sum, l) => sum + Math.round((l.duration_seconds ?? 0) / 60),
+      0
+    );
+
+    // format like "2h 15m"
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    if (h <= 0) return `${m}m`;
+    return `${h}h ${m}m`;
+  }, [modules]);
+
+  // const handleSelectLesson = (lessonId: string) => {
+  //   setSelectedLessonId(lessonId);
+  //   setActiveTab("description");
+  // };
 
   const handleMarkComplete = async () => {
     if (!course || !selectedLesson) return;
     setSavingProgress(true);
-    const supa = supabaseServer();
+    const supa = supabaseBrowser();
 
     try {
       const { data: authData } = await supa.auth.getUser();
@@ -417,7 +714,7 @@ export default function CourseWatchPage() {
         setModules((prev) =>
           prev.map((m) => ({
             ...m,
-            lessons: m.lessons.map((l) =>
+            lessons: m.items.map((l) =>
               l.id === selectedLesson.id ? { ...l, completed: true } : l
             ),
           }))
@@ -428,19 +725,32 @@ export default function CourseWatchPage() {
     }
   };
 
+  // const handleNextLecture = () => {
+  //   if (!selectedLesson) return;
+  //   const idx = allLessons.findIndex((l) => l.id === selectedLesson.id);
+  //   if (idx === -1) return;
+  //   const next = allLessons[idx + 1];
+  //   if (next) {
+  //     setSelectedLessonId(next.id);
+  //     setActiveTab("description");
+  //   }
+  // };
+
   const handleNextLecture = () => {
     if (!selectedLesson) return;
+
     const idx = allLessons.findIndex((l) => l.id === selectedLesson.id);
     if (idx === -1) return;
+
     const next = allLessons[idx + 1];
     if (next) {
-      setSelectedLessonId(next.id);
+      setSelectedItem({ kind: "lesson", id: next.id });
       setActiveTab("description");
     }
   };
 
   const handleDownloadAttachment = async (att: AttachmentRow) => {
-    const supa = supabaseServer();
+    const supa = supabaseBrowser();
     const { data, error } = await supa.storage
       .from("private_attachments")
       .createSignedUrl(att.file_path, 60); // 60s
@@ -462,11 +772,56 @@ export default function CourseWatchPage() {
     );
   }
 
-  // Helper for duration
-  const totalDurationMinutes = allLessons.reduce(
-    (sum, l) => sum + Math.round((l.duration_seconds ?? 0) / 60),
-    0
-  );
+  // // Helper for duration
+  // const totalDurationMinutes = allLessons.reduce(
+  //   (sum, l) => sum + Math.round((l.duration_seconds ?? 0) / 60),
+  //   0
+  // );
+
+  // const progressByLesson = new Map<string, ProgressRow>();
+  // (progressList ?? []).forEach((p) => {
+  //   if (p.lesson_id) progressByLesson.set(p.lesson_id, p);
+  // });
+
+  // const submittedAssignments = new Set(
+  //   (subRows ?? []).map((s) => s.assignment_id)
+  // );
+
+  // const moduleMap = new Map<string, ModuleWithItems>();
+  // (modRows ?? []).forEach((m) => {
+  //   moduleMap.set(m.id, { ...(m as ModuleRow), items: [] });
+  // });
+
+  // // lessons
+  // lessonList.forEach((lesson) => {
+  //   const mod = moduleMap.get(lesson.module_id);
+  //   const completed = !!progressByLesson.get(lesson.id)?.is_completed;
+  //   mod?.items.push({ kind: "lesson", ...lesson, completed });
+  // });
+
+  // // assignments
+  // (assignmentRows ?? []).forEach((a: any) => {
+  //   const mod = moduleMap.get(a.module_id);
+  //   const completed = submittedAssignments.has(a.id);
+  //   mod?.items.push({ kind: "assignment", ...(a as AssignmentRow), completed });
+  // });
+
+  // // sort items inside module
+  // moduleMap.forEach((m) => {
+  //   m.items.sort((x, y) => (x.position ?? 0) - (y.position ?? 0));
+  // });
+
+  // const modulesArray = Array.from(moduleMap.values()).sort(
+  //   (a, b) => (a.position ?? 0) - (b.position ?? 0)
+  // );
+
+  // setModules(modulesArray);
+
+  // // default selection: first incomplete item
+  // const flatItems = modulesArray.flatMap((m) => m.items);
+  // const firstIncomplete = flatItems.find((i) => !i.completed) ?? flatItems[0];
+  // if (firstIncomplete)
+  //   setSelectedItem({ kind: firstIncomplete.kind, id: firstIncomplete.id });
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-purple-50 via-white to-white pt-20 pb-16 mt-12">
@@ -484,7 +839,7 @@ export default function CourseWatchPage() {
             <div className="flex flex-wrap items-center gap-3 text-[11px] text-gray-500">
               <span>
                 {modules.length} Sections • {totalLessons} lectures •{" "}
-                {totalDurationMinutes}m
+                {totalDurationMinutes}
               </span>
               <span className="inline-flex items-center gap-1">
                 <Star className="h-3 w-3 text-yellow-400" />
@@ -551,17 +906,14 @@ export default function CourseWatchPage() {
             </div>
 
             {/* VIDEO AREA */}
-            <div className="rounded-3xl bg-black overflow-hidden relative aspect-video mb-4">
-              {selectedLesson?.cloudflare_video_id ? (
+            {/* <div className="rounded-3xl bg-black overflow-hidden flex aspect-video mb-4"> */}
+            {/* {selectedLesson?.cloudflare_video_id ? (
                 <CloudflarePlayer
                   videoId={selectedLesson.cloudflare_video_id}
                 />
               ) : (
                 <>
-                  {/*
-        Fallback thumbnail – uses Supabase public_thumbnails bucket.
-        If thumbnail_url is already a full URL we use it directly.
-      */}
+                  
                   <Image
                     src={
                       course.thumbnail_url
@@ -581,8 +933,151 @@ export default function CourseWatchPage() {
                     </div>
                   </div>
                 </>
-              )}
-            </div>
+              )} */}
+
+            {/* {selectedItemData?.kind === "lesson" && (
+                <div className="rounded-3xl bg-black overflow-hidden relative aspect-video mb-4">
+                  {selectedItemData.cloudflare_video_id ? (
+                    <CloudflarePlayer
+                      videoId={selectedItemData.cloudflare_video_id}
+                    />
+                  ) : (
+                    <Image
+                      src={
+                        course.thumbnail_url
+                          ? course.thumbnail_url.startsWith("http")
+                            ? course.thumbnail_url
+                            : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/public_thumbnails/${course.thumbnail_url}`
+                          : "https://picsum.photos/seed/course-fallback/1200/675"
+                      }
+                      alt={course.title}
+                      fill
+                      className="object-cover"
+                      unoptimized
+                    />
+                  )}
+                </div>
+              )} */}
+
+            {/* {selectedItemData?.kind === "assignment" && (
+                <div className="mb-4">
+                  <AssignmentPanel
+                    assignment={selectedItemData}
+                    onCompleted={() => {
+                      // simplest refresh: local state patch
+                      setModules((prev) =>
+                        prev.map((m) => ({
+                          ...m,
+                          items: m.items.map((i) =>
+                            i.kind === "assignment" &&
+                            i.id === selectedItemData.id
+                              ? { ...i, completed: true }
+                              : i
+                          ),
+                        }))
+                      );
+                    }}
+                  />
+                </div>
+              )} */}
+
+            {/* VIDEO / ASSIGNMENT AREA */}
+            {/* {selectedItemData?.kind === "lesson" && (
+  <div className="rounded-3xl bg-black overflow-hidden relative aspect-video mb-4">
+    {selectedItemData.cloudflare_video_id ? (
+      <CloudflarePlayer videoId={selectedItemData.cloudflare_video_id} />
+    ) : (
+      <Image
+        src={
+          course.thumbnail_url
+            ? course.thumbnail_url.startsWith("http")
+              ? course.thumbnail_url
+              : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/public_thumbnails/${course.thumbnail_url}`
+            : "https://picsum.photos/seed/course-fallback/1200/675"
+        }
+        alt={course.title}
+        fill
+        className="object-cover"
+        unoptimized
+      />
+    )}
+  </div>
+)}
+
+{selectedItemData?.kind === "assignment" && (
+  <div className="mb-4 rounded-3xl border border-gray-100 bg-white p-4 md:p-5">
+    <AssignmentPanel
+      assignment={selectedItemData}
+      onCompleted={() => {
+        setModules(prev =>
+          prev.map(m => ({
+            ...m,
+            items: m.items.map(i =>
+              i.kind === "assignment" && i.id === selectedItemData.id
+                ? { ...i, completed: true }
+                : i
+            ),
+          }))
+        );
+      }}
+    />
+  </div>
+)} */}
+
+            {/* VIDEO / ASSIGNMENT AREA */}
+            {selectedItemData?.kind === "lesson" && (
+              <div className="rounded-3xl bg-black overflow-hidden relative aspect-video mb-4">
+                {selectedItemData.cloudflare_video_id ? (
+                  <CloudflarePlayer
+                    videoId={selectedItemData.cloudflare_video_id}
+                  />
+                ) : (
+                  <Image
+                    src={
+                      course.thumbnail_url
+                        ? course.thumbnail_url.startsWith("http")
+                          ? course.thumbnail_url
+                          : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/public_thumbnails/${course.thumbnail_url}`
+                        : "https://picsum.photos/seed/course-fallback/1200/675"
+                    }
+                    alt={course.title}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                )}
+              </div>
+            )}
+
+            {selectedItemData?.kind === "assignment" && (
+              <div className="mb-4 rounded-3xl border border-gray-100 bg-white p-4 md:p-5">
+                <AssignmentPanel
+                  assignment={selectedItemData}
+                  // hideHeader
+                  onCompleted={() => {
+                    setModules((prev) =>
+                      prev.map((m) => ({
+                        ...m,
+                        items: m.items.map((i) =>
+                          i.kind === "assignment" &&
+                          i.id === selectedItemData.id
+                            ? { ...i, completed: true }
+                            : i
+                        ),
+                      }))
+                    );
+                  }}
+                />
+              </div>
+            )}
+
+            {selectedItemData?.kind === "quiz" && (
+              <div className="mb-4 rounded-3xl border border-gray-100 bg-white p-4 md:p-5">
+                <QuizIntroPanel quiz={selectedItemData} courseSlug={slug} />
+              </div>
+            )}
+
+            {/* </div> */}
 
             {/* Lesson heading + meta */}
             <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -638,7 +1133,7 @@ export default function CourseWatchPage() {
                 {activeTab === "description" && (
                   <DescriptionTab
                     course={course}
-                    module={selectedModule}
+                    module={selectedModuleLegacy}
                     lesson={selectedLesson}
                   />
                 )}
@@ -682,8 +1177,11 @@ export default function CourseWatchPage() {
                 <ModuleBlock
                   key={m.id}
                   module={m}
-                  selectedLessonId={selectedLessonId}
-                  onSelectLesson={handleSelectLesson}
+                  selectedItem={selectedItem}
+                  onSelectItem={(kind, id) => {
+                    setSelectedItem({ kind, id });
+                    setActiveTab("description");
+                  }}
                 />
               ))}
             </div>
@@ -865,7 +1363,6 @@ function AttachmentsTab({
 //   );
 // }
 
-
 function CommentsTab({
   courseId,
   lesson,
@@ -892,7 +1389,7 @@ function CommentsTab({
 
   // Load reviews + enrollment + existing review
   useEffect(() => {
-    const supa = supabaseServer();
+    const supa = supabaseBrowser();
 
     (async () => {
       setLoading(true);
@@ -912,26 +1409,29 @@ function CommentsTab({
       setUserId(user.id);
 
       // 2) Check enrollment
-      const [{ data: enrollRow }, { data: existingReview }, { data: allReviews }] =
-        await Promise.all([
-          supa
-            .from("enrollments")
-            .select("id")
-            .eq("user_id", user.id)
-            .eq("course_id", courseId)
-            .maybeSingle(),
-          supa
-            .from("reviews")
-            .select("id, rating, comment, display_name")
-            .eq("user_id", user.id)
-            .eq("course_id", courseId)
-            .maybeSingle(),
-          supa
-            .from("reviews")
-            .select("id, rating, comment, created_at, display_name")
-            .eq("course_id", courseId)
-            .order("created_at", { ascending: false }),
-        ]);
+      const [
+        { data: enrollRow },
+        { data: existingReview },
+        { data: allReviews },
+      ] = await Promise.all([
+        supa
+          .from("enrollments")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("course_id", courseId)
+          .maybeSingle(),
+        supa
+          .from("reviews")
+          .select("id, rating, comment, display_name")
+          .eq("user_id", user.id)
+          .eq("course_id", courseId)
+          .maybeSingle(),
+        supa
+          .from("reviews")
+          .select("id, rating, comment, created_at, display_name")
+          .eq("course_id", courseId)
+          .order("created_at", { ascending: false }),
+      ]);
 
       // Can they review?
       setCanReview(!!enrollRow);
@@ -985,7 +1485,7 @@ function CommentsTab({
     setSuccess(null);
 
     try {
-      const supa = supabaseServer();
+      const supa = supabaseBrowser();
 
       // Optional: pull display name from profiles
       const { data: profile } = await supa
@@ -1025,7 +1525,7 @@ function CommentsTab({
       setSuccess("Thanks! Your review has been saved.");
 
       // Reload list so left column updates
-      const { data: allReviews } = await supabaseServer()
+      const { data: allReviews } = await supabaseBrowser()
         .from("reviews")
         .select("id, rating, comment, created_at, display_name")
         .eq("course_id", courseId)
@@ -1054,10 +1554,13 @@ function CommentsTab({
     <div id="review-section" className="space-y-4">
       <div className="flex items-center gap-2">
         <MessageSquare className="h-4 w-4 text-purple-500" />
-        <h4 className="text-sm font-semibold text-gray-900">Comments & Reviews</h4>
+        <h4 className="text-sm font-semibold text-gray-900">
+          Comments & Reviews
+        </h4>
         {lesson && (
           <span className="text-[11px] text-gray-500">
-            You&apos;re currently on: <span className="font-medium">{lesson.title}</span>
+            You&apos;re currently on:{" "}
+            <span className="font-medium">{lesson.title}</span>
           </span>
         )}
       </div>
@@ -1071,7 +1574,9 @@ function CommentsTab({
               <p className="text-[11px] uppercase tracking-wide text-gray-300">
                 Average Rating
               </p>
-              <p className="mt-1 text-4xl font-semibold">{averageRating.toFixed(1)}</p>
+              <p className="mt-1 text-4xl font-semibold">
+                {averageRating.toFixed(1)}
+              </p>
               <Stars rating={averageRating} size={18} />
               <p className="mt-1 text-[11px] text-gray-300">
                 {reviews.length} review{reviews.length === 1 ? "" : "s"}
@@ -1108,7 +1613,8 @@ function CommentsTab({
           <div className="space-y-4">
             {reviews.length === 0 && (
               <p className="text-xs text-gray-500">
-                No reviews yet. Be the first to share your experience with this course.
+                No reviews yet. Be the first to share your experience with this
+                course.
               </p>
             )}
 
@@ -1130,7 +1636,9 @@ function CommentsTab({
                   </div>
                 </div>
                 {rev.comment && (
-                  <p className="mt-3 text-[12px] text-gray-700">{rev.comment}</p>
+                  <p className="mt-3 text-[12px] text-gray-700">
+                    {rev.comment}
+                  </p>
                 )}
               </div>
             ))}
@@ -1149,8 +1657,8 @@ function CommentsTab({
 
           {!canReview && (
             <div className="mb-4 rounded-2xl bg-gray-50 px-4 py-3 text-[11px] text-gray-600">
-              You&apos;ll be able to leave a review after enrolling in this course from
-              the main catalog.
+              You&apos;ll be able to leave a review after enrolling in this
+              course from the main catalog.
             </div>
           )}
 
@@ -1221,13 +1729,17 @@ function CommentsTab({
             disabled={!canReview || submitting}
             className="mt-1 inline-flex w-full items-center justify-center rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 px-4 py-2 text-xs font-semibold text-white shadow-md hover:shadow-lg disabled:opacity-60"
           >
-            {submitting ? "Saving..." : alreadyReviewed ? "Update review" : "Submit review"}
+            {submitting
+              ? "Saving..."
+              : alreadyReviewed
+              ? "Update review"
+              : "Submit review"}
           </button>
 
           {!canReview && (
             <p className="mt-2 text-[10px] text-gray-400">
-              You can buy this course from the public course page to unlock reviews and
-              all lessons.
+              You can buy this course from the public course page to unlock
+              reviews and all lessons.
             </p>
           )}
         </div>
@@ -1244,43 +1756,157 @@ function Stars({ rating, size = 16 }: { rating: number; size?: number }) {
   return (
     <div className="flex items-center gap-0.5">
       {Array.from({ length: full }).map((_, i) => (
-        <Star
-          key={i}
-          size={size}
-          className="text-yellow-400 fill-yellow-400"
-        />
+        <Star key={i} size={size} className="text-yellow-400 fill-yellow-400" />
       ))}
       {half && (
-        <StarHalf
-          size={size}
-          className="text-yellow-400 fill-yellow-400"
-        />
+        <StarHalf size={size} className="text-yellow-400 fill-yellow-400" />
       )}
       {Array.from({ length: 5 - full - (half ? 1 : 0) }).map((_, i) => (
-        <Star
-          key={`empty-${i}`}
-          size={size}
-          className="text-gray-300"
-        />
+        <Star key={`empty-${i}`} size={size} className="text-gray-300" />
       ))}
     </div>
   );
 }
 
+// function ModuleBlock({
+//   module,
+//   selectedLessonId,
+//   onSelectLesson,
+// }: {
+//   module: ModuleWithLessons;
+//   selectedLessonId: string | null;
+//   onSelectLesson: (id: string) => void;
+// })
+
+// function ModuleBlock({
+//   module,
+//   selectedItem,
+//   onSelectItem,
+// }: {
+//   module: ModuleWithItems;
+//   selectedItem: { kind: "lesson" | "assignment"; id: string } | null;
+//   onSelectItem: (kind: "lesson" | "assignment", id: string) => void;
+// }) {
+//   const [open, setOpen] = useState(true);
+//   const completedLessons = module.lessons.filter((l) => l.completed).length;
+//   const total = module.lessons.length || 1;
+//   const pct = Math.round((completedLessons / total) * 100);
+
+//   return (
+//     <div className="rounded-2xl border border-gray-100 bg-gray-50/60 overflow-hidden">
+//       <button
+//         type="button"
+//         onClick={() => setOpen((o) => !o)}
+//         className="w-full flex items-center justify-between px-3 py-2 text-left text-[11px] font-semibold text-gray-800 bg-white"
+//       >
+//         <div className="flex flex-col">
+//           <span>{module.title}</span>
+//           <span className="text-[10px] text-gray-500">
+//             {module.lessons.length} lectures • {pct}% complete
+//           </span>
+//         </div>
+//         <ChevronDown
+//           className={`h-4 w-4 text-gray-400 transition-transform ${
+//             open ? "rotate-180" : "rotate-0"
+//           }`}
+//         />
+//       </button>
+
+//       {open && (
+//         <div className="border-t border-gray-100 bg-white">
+//           {/* {module.lessons.map((l) => {
+//             const active = l.id === selectedLessonId;
+//             return (
+//               <button
+//                 key={l.id}
+//                 type="button"
+//                 onClick={() => onSelectLesson(l.id)}
+//                 className={`w-full flex items-center justify-between px-3 py-2 text-[11px] border-t border-gray-50
+//                   ${
+//                     active
+//                       ? "bg-purple-50 text-purple-700"
+//                       : "hover:bg-gray-50 text-gray-700"
+//                   }`}
+//               >
+//                 <div className="flex items-center gap-2">
+//                   <span
+//                     className={`h-3 w-3 rounded-[4px] border ${
+//                       l.completed
+//                         ? "bg-emerald-500 border-emerald-500"
+//                         : "border-gray-300"
+//                     }`}
+//                   />
+//                   <span className="line-clamp-1">{l.title}</span>
+//                 </div>
+//                 <span className="text-[10px] text-gray-500">
+//                   {Math.round((l.duration_seconds ?? 0) / 60)}m
+//                 </span>
+//               </button>
+//             );
+//           })} */}
+
+//           {module.items.map((i) => {
+//             const active =
+//               i.id === selectedItem?.id && i.kind === selectedItem.kind;
+//             return (
+//               <button
+//                 key={i.kind + i.id}
+//                 onClick={() => onSelectItem(i.kind, i.id)}
+//                 className={`w-full flex items-center justify-between px-3 py-2 text-[11px] border-t border-gray-50
+//         ${
+//           active
+//             ? "bg-purple-50 text-purple-700"
+//             : "hover:bg-gray-50 text-gray-700"
+//         }`}
+//               >
+//                 <div className="flex items-center gap-2">
+//                   <span
+//                     className={`h-3 w-3 rounded-[4px] border ${
+//                       i.completed
+//                         ? "bg-emerald-500 border-emerald-500"
+//                         : "border-gray-300"
+//                     }`}
+//                   />
+
+//                   <span className="line-clamp-1">
+//                     {i.kind === "assignment"
+//                       ? `Assignment: ${i.title}`
+//                       : i.title}
+//                   </span>
+//                 </div>
+
+//                 <span className="text-[10px] text-gray-500">
+//                   {i.kind === "lesson"
+//                     ? `${Math.round((i.duration_seconds ?? 0) / 60)}m`
+//                     : ""}
+//                 </span>
+//               </button>
+//             );
+//           })}
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
 
 function ModuleBlock({
   module,
-  selectedLessonId,
-  onSelectLesson,
+  selectedItem,
+  onSelectItem,
 }: {
-  module: ModuleWithLessons;
-  selectedLessonId: string | null;
-  onSelectLesson: (id: string) => void;
+  module: ModuleWithItems;
+  selectedItem: { kind: "lesson" | "assignment" | "quiz"; id: string } | null;
+  onSelectItem: (kind: "lesson" | "assignment" | "quiz", id: string) => void;
 }) {
   const [open, setOpen] = useState(true);
-  const completedLessons = module.lessons.filter((l) => l.completed).length;
-  const total = module.lessons.length || 1;
-  const pct = Math.round((completedLessons / total) * 100);
+
+  // Progress calc should count ALL trackable items in this module (lessons + assignments)
+  const completedItems = module.items.filter((i) => i.completed).length;
+  const totalItems = module.items.length || 1;
+  const pct = Math.round((completedItems / totalItems) * 100);
+
+  // If you want to show only lecture count in subtitle, keep this:
+  const totalLectures = module.items.filter((i) => i.kind === "lesson").length;
 
   return (
     <div className="rounded-2xl border border-gray-100 bg-gray-50/60 overflow-hidden">
@@ -1292,7 +1918,7 @@ function ModuleBlock({
         <div className="flex flex-col">
           <span>{module.title}</span>
           <span className="text-[10px] text-gray-500">
-            {module.lessons.length} lectures • {pct}% complete
+            {totalLectures} lectures • {pct}% complete
           </span>
         </div>
         <ChevronDown
@@ -1304,13 +1930,15 @@ function ModuleBlock({
 
       {open && (
         <div className="border-t border-gray-100 bg-white">
-          {module.lessons.map((l) => {
-            const active = l.id === selectedLessonId;
+          {module.items.map((i) => {
+            const active =
+              i.id === selectedItem?.id && i.kind === selectedItem.kind;
+
             return (
               <button
-                key={l.id}
+                key={i.kind + i.id}
                 type="button"
-                onClick={() => onSelectLesson(l.id)}
+                onClick={() => onSelectItem(i.kind, i.id)}
                 className={`w-full flex items-center justify-between px-3 py-2 text-[11px] border-t border-gray-50
                   ${
                     active
@@ -1321,15 +1949,23 @@ function ModuleBlock({
                 <div className="flex items-center gap-2">
                   <span
                     className={`h-3 w-3 rounded-[4px] border ${
-                      l.completed
+                      i.completed
                         ? "bg-emerald-500 border-emerald-500"
                         : "border-gray-300"
                     }`}
                   />
-                  <span className="line-clamp-1">{l.title}</span>
+
+                  <span className="line-clamp-1">
+                    {i.kind === "assignment"
+                      ? `Assignment: ${i.title}`
+                      : i.title}
+                  </span>
                 </div>
+
                 <span className="text-[10px] text-gray-500">
-                  {Math.round((l.duration_seconds ?? 0) / 60)}m
+                  {i.kind === "lesson"
+                    ? `${Math.round((i.duration_seconds ?? 0) / 60)}m`
+                    : ""}
                 </span>
               </button>
             );
