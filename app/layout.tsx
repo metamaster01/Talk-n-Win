@@ -8,6 +8,7 @@ import "./globals.css";
 import Navigation from "@/components/navigation";
 import Footer from "@/components/footer";
 import FloatingWhatsApp from "@/components/FloatingWhatsapp";
+import { AuthProvider } from "./providers/AuthProvider";
 
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], weight: ["700"] });
 const poppins = Poppins({
@@ -45,10 +46,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.className} ${poppins.className} antialiased`}
       >
+        <AuthProvider>
+
         <Navigation />
         {children}
         <Analytics />
         <Footer />
+        </AuthProvider>
 
         <Script
           id="meta-pixel-script"
