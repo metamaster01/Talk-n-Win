@@ -319,7 +319,7 @@ export default function HeroSection() {
                 style={{ borderRadius: "40px 0 0 40px" }}
               >
                 <img
-                  src="/hero-1.png"
+                  src="/hero-4.png"
                   alt="Professional Women in Conversation"
                   className="w-full h-full object-cover"
                   loading="lazy"
